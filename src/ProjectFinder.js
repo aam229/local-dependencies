@@ -20,7 +20,7 @@ export default class ProjectFinder {
 
   buildProjectsList() {
     const projects = [];
-    if (this.print) console.log(`=> Looking for projects in '${this.rootPaths}':`);
+    if (this.print) console.log(`=> Looking for local projects in '${this.rootPaths}':`);
     this.rootPaths.forEach((rootPath) => this.buildProjectsListRecursively(rootPath, projects));
     return projects;
   }

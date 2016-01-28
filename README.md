@@ -1,6 +1,7 @@
 # Local Dependencies
 
 ## Motivation
+
 The `npm link` command can lead to unexpected behaviors: 
 
  - Dependencies that are present in the root module and the linked module resolve to different instances.
@@ -34,5 +35,17 @@ Add the `watch-local-dependencies` script to your `package.json`:
 Run `npm run watch-dependencies`. 
 
 > The `watch-local-dependencies` script will check that all the packages defined by your local projects are installed. It may take a bit of time to execute the first time if you are missing some external dependencies.
+
+
+## Development
+
+This project defines a few npm scripts that you can use to help you develop on this project:
+
+ - Use `npm run compile` to compile the `src` folder using [babel](https://babeljs.io/). The compiled files are put in the `lib` folder.
+ - Use `npm run watch` to watch the `src` for changes and recompile the files.
+ - Use `npm run lint` to make sure your code conforms to this project's standards 
+
+> Make sure you install the dev dependencies in order to use the commands above.
+
 
 
