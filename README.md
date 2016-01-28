@@ -1,36 +1,38 @@
 # Local Dependencies
 
-The `npm link` command is broken by design. While the root module is able to appropriately require linked module, there are issues:
+## Motivation
+The `npm link` command can lead to unexpected behaviors: 
 
- - Dependencies that are present in the root module and the linked module will resolve to different instances.
+ - Dependencies that are present in the root module and the linked module resolve to different instances.
  - Peer dependencies in the linked module are not available.
+ - Build tools such as [babel](https://babeljs.io/) fail to find their plugins unless an absolute path is specified.
  
-> Another issue to keep in mind is that linked modules may rely on other linked module. This makes any implementation more complicated by requiring recursion.
+However, `npm link` is extremely useful when working on multiple modules at the same time. It allows a developer to have the local updates available immediately. The goal of this module is to provide the convenience of links while avoiding their pitfalls.
 
-## Linking
+## Usage
 
-We can symlink all the dependencies of the linked module so that they resolve to the one in the root module. All peer dependencies must be symlinked as well as shared dev/prod dependencies. While this is not a bad solutions, it modifies all the dependencies of the linked module. It would not work if multiple projects with the same linked dependencies are running at the same time.
+Install the `local-dependencies` module by running `npm install --save-dev local-dependencies`. Define a `.ldrc` file that specifies the path in which your local dependencies are saved. It has the following format:
  
-> It kind of kills it that projects with the same linked dependencies cannot run at the same time.
+ ```json
+ {
+   "paths": [
+     "/var/apps/external/"
+   ]
+ } 
+ ```
+ 
+ > The specified paths are walked recursively to find npm modules.
+ 
+Add the `watch-local-dependencies` script to your `package.json`:
 
-## Copying
+```json
+{
+  "watch-dependencies": "watch-local-dependencies"
+}
+```
 
-We can copy all the dependencies that are present locally into the root module dependencies. It means watching all the local dependencies for changes and recopying them on change. While this is probably the best solution, it is more complex to implement and it requires some configuration.
+Run `npm run watch-dependencies`. 
 
-> This to me, seems like the best solution
+> The `watch-local-dependencies` script will check that all the packages defined by your local projects are installed. It may take a bit of time to execute the first time if you are missing some external dependencies.
 
-## Algorithm
-
-1. Read the .dmrc file in the `rootModule` to get a list of paths in which to look for local modules.
-2. Build a list named `localDependencies` of local modules in the provided paths
-3. Create an empty `allDependencies` object. Keys are the module name and values are objects looking like `{ version: "x", path: "x", isLocal: true }` 
-4. Starting at the `rootModule`:
-    1. Look at the module's dependencies and match them against the `localDependencies`.
-    2. If there are matches, go back to `1` for each of the matched modules.
-    3. Add all matches to the `allDependencies` object.
-    4. Go through all the installed dependency
-        1. If the `allDependencies` object already contains an entry and the dependency`version is lower, continue.
-        2. Add the `dependency` to the `localDependencies`
-5. Copy all the paths from the `allDependencies` object into the `rootModules` dependencies
-6. Watch the dependencies from the `allDependencies` that have `isLocal` set to true. Copy the content of the on change.
 

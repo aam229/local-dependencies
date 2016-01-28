@@ -17,6 +17,8 @@ export default class ProjectInstaller {
 
     // Find any missing dependencies
     const rootPackage = getPackageSummary(this.rootPath);
+
+    // TODO: Check for the external dependencies defined by the local dependencies.
     const missingDependency = Object.keys(rootPackage.dependencies).find((depName) => {
       return !isDirectory(path.join(rootPackage.path, NODE_MODULES, depName));
     });
