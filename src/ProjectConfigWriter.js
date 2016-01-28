@@ -32,13 +32,15 @@ export default class ProjectConfigWriter {
 
   write() {
      const config = this.dependencies.reduce((conf, dependency) => {
-       config[dependency.name] = {
+       conf[dependency.name] = {
          name: dependency.name,
          path: dependency.path,
          watch: dependency.watch
        }
+       return conf;
      }, {});
     const configPath = path.join(this.project.path, CONFIG);
+    console.log(config);
     fs.writeFileSync(configPath, JSON.stringify(config), 'utf8');
   }
 }

@@ -28,7 +28,7 @@ function createConfig(){
 //}
 
 function getWatches(){
-  uiHelpers.getWatches(config.getDependencies())
+  return uiHelpers.getWatches(config.getDependencies())
     .then((watches) => {
       config.setDependenciesWatches(watches);
       return uiHelpers.getConfirmation('Are you OK with the selected watches?');
@@ -38,10 +38,10 @@ function getWatches(){
 
 
 function getPaths(){
-  uiHelpers.getPaths(rootPath)
+  return uiHelpers.getPaths(rootPath)
     .then((dependencyPaths) => {
       const localProjects = new ProjectFinder(dependencyPaths).getProjects();
-      const dependencies = new ProjectDependenciesFinder(config.getProject(), localProjects).getProjects();
+      const dependencies = new ProjectDependenciesFinder(config.getProject().path, localProjects).getProjects();
       config.setDependencies(dependencies);
       return uiHelpers.getConfirmation('Did we find all the dependencies you expected?');
     })
@@ -49,7 +49,7 @@ function getPaths(){
 }
 
 function getProjectPath(){
-  uiHelpers.getProjectPath(rootPath)
+  return uiHelpers.getProjectPath(rootPath)
     .then((projectPath) => {
       config.setProject(helpers.getPackageSummary(projectPath));
       return uiHelpers.getConfirmation('The config will be built for ' + config.getProject().name + '@' + config.getProject().version)
@@ -57,7 +57,8 @@ function getProjectPath(){
     .then(() => getPaths(), () => getProjectPath())
 }
 
-getProjectPath();
+getProjectPath()
+  .catch((err) => console.error(err, err.stack));
 
 
 
