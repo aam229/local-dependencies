@@ -1,6 +1,6 @@
 {
   "name": "local-dependencies",
-  "description": "Manage dependencies that are being developped locally",
+  "description": "Install and watch local npm dependencies",
   "author": "Alexandre Massonneau <aam229@cornell.edu> (http://github.com/aam229)",
   "license": "MIT",
   "version": "1.0.0-alpha1",
@@ -12,10 +12,16 @@
   "main": "lib/index.js",
   "scripts": {
     "compile": "babel --presets es2015,stage-0,react --plugins transform-runtime src/ --out-dir lib/",
+    "lint": "eslint -c .eslintrc src bin config",
+    "prepublish": "npm run compile && npm run lint",
     "watch": "npm-watch"
   },
   "watch": {
     "compile": "src/*.js"
+  },
+  "bin" : {
+    "install-local-dependencies" : "./bin/install-local-dependencies.js",
+    "watch-local-dependencies" : "./bin/watch-local-dependencies.js"
   },
   "dependencies": {
     "babel-cli": "6.4.0",
@@ -35,8 +41,7 @@
     "eslint-loader": "1.0.0",
     "eslint-plugin-import": "0.12.1",
     "eslint-plugin-react": "3.7.1",
-    "fs-extra": "^0.26.4",
-    "semver": "^5.1.0"
+    "fs-extra": "^0.26.4"
   },
   "engines": {
     "node": ">=4.1.1",

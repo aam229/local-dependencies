@@ -14,20 +14,21 @@ export default class ProjectFinder {
     if (this.projects) {
       return this.projects;
     }
-    return this.projects = this.buildProjectsList();
+    this.projects = this.buildProjectsList();
+    return this.projects;
   }
 
   buildProjectsList() {
     const projects = [];
-    this.print && console.log(`=> Looking for projects in '${this.rootPaths}':`);
+    if (this.print) console.log(`=> Looking for projects in '${this.rootPaths}':`);
     this.rootPaths.forEach((rootPath) => this.buildProjectsListRecursively(rootPath, projects));
     return projects;
   }
 
   buildProjectsListRecursively(currentPath, projects) {
-    if(isPackage(currentPath)){
+    if (isPackage(currentPath)) {
       const project = getPackageSummary(currentPath);
-      this.print && console.log(`   - ${project.name}@${project.version}`);
+      if (this.print) console.log(`   - ${project.name}@${project.version}`);
       projects.push(project);
     }
 
@@ -39,6 +40,6 @@ export default class ProjectFinder {
       // Only keep directories
       .filter((childPath) => isDirectory(childPath))
       // Go dig into the directory
-      .forEach((childPath) => this.buildProjectsListRecursively(childPath, projects))
+      .forEach((childPath) => this.buildProjectsListRecursively(childPath, projects));
   }
 }

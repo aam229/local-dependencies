@@ -1,24 +1,10 @@
-const path = require('path');
-const fs = require('fs');
-const LocalDependencies = require('../lib/').default;
+const localDependencies = require('../lib');
+const ProjectConfig = localDependencies.ProjectConfig;
+const ProjectFinder = localDependencies.ProjectFinder;
+const ProjectDependenciesFinder = localDependencies.ProjectDependenciesFinder;
+const ProjectWatcher = localDependencies.ProjectWatcher;
 
-const CONFIG_FILE = '.ldrc';
-
-var configContent, config;
-const configPath = path.join(process.cwd(), CONFIG_FILE);
-
-try {
-  configContent = fs.readFileSync(configPath, { encoding: "utf-8" });
-} catch (error) {
-  throw new Error('Could not find the local dependencies config file at ' + configPath);
-}
-
-try {
-  config = JSON.parse(configContent);
-} catch (error) {
-  throw new Error("Cound not parse the local dependencies config file at " + configPath);
-}
-
-config.root = process.cwd();
-
-new LocalDependencies(config);
+const config = new ProjectConfig(process.cwd()).parse();
+const projFinder = new ProjectFinder(config.getLookupPaths());
+const depsFinder = new ProjectDependenciesFinder(config.getProjectRoot(), projFinder.getProjects());
+new ProjectWatcher(config.getProjectRoot(), depsFinder.getProjects()).watch();

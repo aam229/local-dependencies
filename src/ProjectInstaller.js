@@ -1,68 +1,35 @@
 import path from 'path';
-import child_process from 'child_process';
-
-import { NODE_MODULES, GIT } from './constants';
-import { isDirectory, copyPackage } from './helpers';
+import { NODE_MODULES } from './constants';
+import { isDirectory, copyPackage, installPackage, getPackageSummary } from './helpers';
 
 export default class ProjectInstaller {
-  constructor(projects) {
+  constructor(rootPath, dependenciesProjects) {
     this.print = true;
-    this.projects = projects.reduce((projectsMap, project) => {
-      projectsMap.set(project.name, {
-        ...project,
-        invalid: true
-      });
-      return projectsMap;
-    }, new Map());
-    Array.from(this.projects.values()).forEach((project) => {
-      project.projectsDependencies = project.projectsDependencies.map((projectDep) => {
-        return this.projects.get(projectDep.name);
-      })
-    })
+    this.rootPath = rootPath;
+    this.dependenciesProjects = dependenciesProjects;
   }
 
-  install(npm = false, hoist = false) {
-    this.print && console.log('=> Installing projects');
-    const projects = Array.from(this.projects.values());
-    while (projects.length > 0) {
-      const index = projects.findIndex((proj) => {
-        return ! proj.projectsDependencies.find((projectDep) => projectDep.invalid);
-      });
-      if (index === -1) {
-        throw new Error('Could not find any project ready to install, maybe you have circular dependencies?')
-      }
-      const project = projects[index];
-      this.print && console.log(`   => Installing ${project.path}`);
+  install() {
+    if (this.print) console.log(`=> Installing ${this.rootPath}`);
 
-      // TODO: Hoist project dependencies recursively
-      project.projectsDependencies.forEach((projectDep) => {
-        this.copyProject(projectDep, project);
-      });
-      // NPM install the project here
-      this.npmInstall(project);
+    // Copy all the local dependencies into the project
+    this.dependenciesProjects.forEach((depProject) => this.copy(depProject));
 
-      projects.splice(index, 1);
-      project.invalid = false;
-    }
-  }
-
-  npmInstall(project) {
-    const missingDependency = !! Object.keys(project.dependencies)
-      .find((depName) => {
-        return !isDirectory(path.join(project.path, NODE_MODULES, depName))
-      });
-
-    if (missingDependency === false){
-      return;
-    }
-    this.print && console.log(`      - NPM install ${project.name}`);
-    child_process.execSync('npm install', {
-      cwd: project.path
+    // Find any missing dependencies
+    const rootPackage = getPackageSummary(this.rootPath);
+    const missingDependency = Object.keys(rootPackage.dependencies).find((depName) => {
+      return !isDirectory(path.join(rootPackage.path, NODE_MODULES, depName));
     });
+    if (!missingDependency) return this;
+
+    // Install missing dependencies
+    if (this.print) console.log(`   - NPM install`);
+    installPackage(this.rootPath);
+    return this;
   }
 
-  copyProject(sourceProject, destProject) {
-    this.print && console.log(`      - Copying ${sourceProject.path}`);
-    copyPackage(sourceProject, destProject.path)
+  copy(dependencyProject) {
+    if (this.print) console.log(`   - Copying ${dependencyProject.path}`);
+    copyPackage(dependencyProject, this.rootPath);
   }
 }

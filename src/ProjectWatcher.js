@@ -1,27 +1,37 @@
 import chokidar from 'chokidar';
-import { copyPackage } from './helpers'
+import { copyPackage } from './helpers';
 
 export default class ProjectWatcher {
-  constructor(srcProject, destPackagePath) {
+  constructor(rootPath, dependenciesProjects) {
     this.print = true;
-    this.srcProject = srcProject;
-    this.destPackagePath = destPackagePath;
+    this.rootPath = rootPath;
+    this.dependenciesProjects = dependenciesProjects;
   }
 
-  watch(){
-    this.copy();
-    this.print && console.log(`=> Watching ${this.srcProject.path}`);
-    this.watcher = chokidar.watch(this.srcProject.path);
-    this.watcher.on('change', () => this.copy());
+  watch() {
+    if (this.watcher) {
+      console.warn('Already watching');
+      return this;
+    }
+    if (this.print) console.log(`=> Watching dependencies for ${this.rootPath}`);
+    this.watcher = chokidar.watch(this.dependenciesProjects.map((depProject) => depProject.path));
+    this.watcher.on('change', (path) => this.copy(this.getProject(path)));
+    return this;
   }
 
-  copy(){
-    this.print && console.log(`=> Copying ${this.srcProject.path}`);
-    copyPackage(this.srcProject, this.destPackagePath);
+  getProject(path) {
+    return this.dependenciesProjects.find((project) => {
+      return path.startsWith(project.path);
+    });
   }
 
-  unwatch(){
-    if (!this.watcher){
+  copy(project) {
+    if (this.print) console.log(`   - Copying ${project.name}@${project.version}`);
+    copyPackage(project, this.rootPath);
+  }
+
+  unwatch() {
+    if (!this.watcher) {
       return null;
     }
     this.watcher.close();
