@@ -17,17 +17,25 @@ export default class ProjectInstaller {
 
     // Find any missing dependencies
     const rootPackage = getPackageSummary(this.rootPath);
-
-    // TODO: Check for the external dependencies defined by the local dependencies.
-    const missingDependency = Object.keys(rootPackage.dependencies).find((depName) => {
-      return !isDirectory(path.join(rootPackage.path, NODE_MODULES, depName));
+    const missingDependency = this.findMissingDependency(rootPackage) || this.dependenciesProjects.find((depProject) => {
+      return this.findMissingDependency(depProject);
     });
-    if (!missingDependency) return this;
 
+    if (!missingDependency) return this;
     // Install missing dependencies
-    if (this.print) console.log(`   - NPM install`);
+    if (this.print) console.log(`   - NPM install due to missing dependency`);
     installPackage(this.rootPath);
     return this;
+  }
+
+  findMissingDependency(project) {
+    return Object.keys(project.dependencies).find((depName) => {
+      if (!isDirectory(path.join(this.rootPath, NODE_MODULES, depName))) {
+        console.log(`   - Missing dependency ${depName}@${project.dependencies[depName]} from ${project.name}`);
+        return true;
+      }
+      return false;
+    });
   }
 
   copy(dependencyProject) {

@@ -53,8 +53,9 @@ export function getPackageSummary(fullPath) {
   return {
     name,
     version,
-    path: fullPath,
-    dependencies: Object.assign({}, dependencies, devDependencies),
-    peerDependencies
+    dependencies,
+    devDependencies,
+    peerDependencies,
+    path: fullPath
   };
 }
