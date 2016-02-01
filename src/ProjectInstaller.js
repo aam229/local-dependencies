@@ -1,45 +1,53 @@
 import path from 'path';
-import { NODE_MODULES } from './constants';
-import { isDirectory, copyPackage, installPackage, getPackageSummary } from './helpers';
+import childProcess from 'child_process';
+import fs from 'fs-extra';
+
+import { NODE_MODULES, GIT } from './constants';
+import { isDirectory } from './helpers';
 
 export default class ProjectInstaller {
-  constructor(rootPath, dependenciesProjects) {
-    this.print = true;
-    this.rootPath = rootPath;
-    this.dependenciesProjects = dependenciesProjects;
+  constructor(project, dependencies) {
+    this.project = project;
+    this.dependencies = dependencies;
   }
 
-  install() {
-    if (this.print) console.log(`=> Installing ${this.rootPath}`);
-
+  installLocal() {
     // Copy all the local dependencies into the project
-    this.dependenciesProjects.forEach((depProject) => this.copy(depProject));
-
-    // Find any missing dependencies
-    const rootPackage = getPackageSummary(this.rootPath);
-    const missingDependency = this.findMissingDependency(rootPackage) || this.dependenciesProjects.find((depProject) => {
-      return this.findMissingDependency(depProject);
-    });
-
-    if (!missingDependency) return this;
-    // Install missing dependencies
-    if (this.print) console.log(`   - NPM install due to missing dependency`);
-    installPackage(this.rootPath);
+    this.dependencies.forEach((dependencyProject) => this.installProject(dependencyProject));
     return this;
   }
 
-  findMissingDependency(project) {
-    return Object.keys(project.dependencies).find((depName) => {
-      if (!isDirectory(path.join(this.rootPath, NODE_MODULES, depName))) {
-        console.log(`   - Missing dependency ${depName}@${project.dependencies[depName]} from ${project.name}`);
-        return true;
+  installRemote(missingDependencies) {
+    if (missingDependencies || this.getMissingDependencies().length > 0) {
+      // Install missing dependencies
+      childProcess.execSync('npm install', { cwd: this.project.getPath() });
+    }
+    return this;
+  }
+
+  getMissingDependencies() {
+    // Find any missing dependencies
+    const allProjects = [ this.project, ...this.dependencies ];
+    return [].concat(...allProjects.map((project) => {
+      return this.getMissingProjectDependencies(project);
+    }));
+  }
+
+  getMissingProjectDependencies(project) {
+    return project.getDependencies(project === this.project).filter((dependencyReference) => {
+      if (isDirectory(path.join(this.project.getPath(), NODE_MODULES, dependencyReference.getName()))) {
+        return false;
       }
-      return false;
     });
   }
 
-  copy(dependencyProject) {
-    if (this.print) console.log(`   - Copying ${dependencyProject.path}`);
-    copyPackage(dependencyProject, this.rootPath);
+  installProject(dependencyProject) {
+    const destPath = path.join(this.project.getPath(), NODE_MODULES, dependencyProject.getName());
+    fs.emptyDirSync(destPath);
+    fs.readdirSync(dependencyProject.getPath())
+      .filter((childName) => childName !== NODE_MODULES && childName !== GIT)
+      .forEach((childName) => {
+        fs.copySync(path.join(dependencyProject.getPath(), childName), path.join(destPath, childName));
+      });
   }
 }

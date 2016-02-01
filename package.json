@@ -12,21 +12,25 @@
   "main": "lib/index.js",
   "scripts": {
     "compile": "babel --presets es2015,stage-0,react --plugins transform-runtime src/ --out-dir lib/",
-    "lint": "eslint -c .eslintrc src bin config",
+    "lint": "eslint -c .eslintrc src bin",
+    "fix-lint": "eslint --fix -c .eslintrc src bin",
     "prepublish": "npm run compile && npm run lint",
     "watch": "npm-watch"
   },
   "watch": {
-    "compile": "src/*.js"
+    "compile": "src/*"
   },
   "bin": {
     "install-local-dependencies": "./bin/install-local-dependencies.js",
     "watch-local-dependencies": "./bin/watch-local-dependencies.js"
   },
   "dependencies": {
+    "chalk": "^1.1.1",
     "chokidar": "^1.4.2",
     "fs-extra": "^0.26.4",
-    "inquirer": "^0.11.4"
+    "inquirer": "^0.11.4",
+    "inquirer-path": "^1.0.0-alpha2",
+    "resolve": "^1.1.7"
   },
   "devDependencies": {
     "babel-cli": "6.4.0",

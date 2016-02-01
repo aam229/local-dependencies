@@ -22,25 +22,24 @@ export default class ProjectConfigWriter {
   }
 
   setDependenciesWatches(dependencyNames) {
-    this.dependencies.forEach((dependency) => {
-      if(dependencyNames.find((dependencyName) => dependencyName === dependency.name)) {
-        dependency.watch = true;
+    this.dependencies.forEach((dependencyProject) => {
+      if (dependencyNames.find((dependencyName) => dependencyName === dependencyProject.getName())) {
+        dependencyProject.setWatch(true);
       }
     });
     return this;
   }
 
   write() {
-     const config = this.dependencies.reduce((conf, dependency) => {
-       conf[dependency.name] = {
-         name: dependency.name,
-         path: dependency.path,
-         watch: dependency.watch
-       }
-       return conf;
-     }, {});
+    const config = this.dependencies.reduce((conf, dependencyProject) => {
+      conf[dependencyProject.getName()] = {
+        path: dependencyProject.getPath(),
+        watch: dependencyProject.getWatch()
+      };
+      return conf;
+    }, {});
     const configPath = path.join(this.project.path, CONFIG);
-    console.log(config);
-    fs.writeFileSync(configPath, JSON.stringify(config), 'utf8');
+    const configTxt = JSON.stringify(config, null, 2);
+    fs.writeFileSync(configPath, configTxt, 'utf8');
   }
 }

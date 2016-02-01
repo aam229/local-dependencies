@@ -1,8 +1,9 @@
 import fs from 'fs-extra';
 import path from 'path';
 
+import Project from './Project';
 import { NODE_MODULES } from './constants';
-import { isPackage, getPackageSummary, isDirectory } from './helpers';
+import { isDirectory } from './helpers';
 
 export default class ProjectFinder {
   constructor(rootPaths) {
@@ -20,16 +21,13 @@ export default class ProjectFinder {
 
   buildProjectsList() {
     const projects = [];
-    if (this.print) console.log(`=> Looking for local projects in '${this.rootPaths}':`);
     this.rootPaths.forEach((rootPath) => this.buildProjectsListRecursively(rootPath, projects));
     return projects;
   }
 
   buildProjectsListRecursively(currentPath, projects) {
-    if (isPackage(currentPath)) {
-      const project = getPackageSummary(currentPath);
-      if (this.print) console.log(`   - ${project.name}@${project.version}`);
-      projects.push(project);
+    if (Project.exists(currentPath)) {
+      projects.push(Project.create(currentPath));
     }
 
     fs.readdirSync(currentPath)

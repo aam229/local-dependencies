@@ -1,25 +1,25 @@
-import {  } from './helpers';
+import path from 'path';
+import fs from 'fs';
+import Project from './Project';
+import ProjectConfig from './ProjectConfig';
+import { CONFIG } from './constants';
 
 export default class ProjectConfigReader {
-  parse(projectPath) {
-    let configContent;
-    const configPath = path.join(projectPath, CONFIG);
-    try {
-      configContent = fs.readFileSync(configPath, { encoding: 'utf-8' });
-    } catch (error) {
-      throw new Error(`Could not find the local dependencies config file at ${configPath}`);
-    }
+  constructor(projectPath) {
+    this.projectPath = projectPath;
+  }
 
-    try {
-      const config = JSON.parse(configContent);
-      const dependenciesPaths = config.dependencies.map((dependency) => dependency.path);
-      const test = config.dependencies.map((dependency) => dependency.path);
-      this.setProjectRoot(projectPath);
-      this.setDependencies(dependenciesPath);
-      this.setDependenciesWatches(dependenciesWatch);
-    } catch (error) {
-      throw new Error(`Cound not parse the local dependencies config file at ${configPath}`);
-    }
-    return this;
+  parse() {
+    const configPath = path.join(this.projectPath, CONFIG);
+    const configContent = fs.readFileSync(configPath, { encoding: 'utf-8' });
+    const config = JSON.parse(configContent);
+    const project = Project.create(this.projectPath);
+
+    const dependencies = Object.keys(config).map((dependencyName) => {
+      const dependencyConfig = config[dependencyName];
+      const dependencyProject = Project.create(dependencyConfig.path);
+      return dependencyProject.setWatch(dependencyConfig.watch);
+    });
+    return new ProjectConfig(project, dependencies);
   }
 }

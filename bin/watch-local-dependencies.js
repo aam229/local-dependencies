@@ -1,13 +1,22 @@
+const chalk = require('chalk');
+const constants = require('../lib/constants');
 const localDependencies = require('../lib');
-const ProjectConfig = localDependencies.ProjectConfig;
-const ProjectFinder = localDependencies.ProjectFinder;
-const ProjectDependenciesFinder = localDependencies.ProjectDependenciesFinder;
+const ProjectConfigReader = localDependencies.ProjectConfigReader;
 const ProjectInstaller = localDependencies.ProjectInstaller;
 const ProjectWatcher = localDependencies.ProjectWatcher;
 
-const config = new ProjectConfig(process.cwd()).parse();
-const projFinder = new ProjectFinder(config.getLookupPaths());
-const depsFinder = new ProjectDependenciesFinder(config.getProjectRoot(), projFinder.getProjects());
+try {
+  const config = new ProjectConfigReader(process.cwd()).parse();
+  new ProjectInstaller(config.getProject(), config.getDependencies())
+    .installLocal()
+    .installRemote();
 
-new ProjectInstaller(config.getProjectRoot(), depsFinder.getProjects()).install();
-new ProjectWatcher(config.getProjectRoot(), depsFinder.getProjects()).watch();
+  new ProjectWatcher(config.getProject(), config.getDependencies())
+    .watch();
+} catch (err) {
+  console.log(chalk.red(`Could not parse the ${constants.CONFIG} file.`));
+  console.log(chalk.red(`Run 'npm run configure-local-dependencies' to generate a valid ${constants.CONFIG} file.`));
+  console.log();
+  console.log(chalk.red(err.stack));
+  return;
+}
