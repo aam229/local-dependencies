@@ -7,7 +7,7 @@ import { isDirectory, exists } from './../helpers';
 
 inquirer.prompt.registerPrompt('path', PathPrompt);
 
-export function getConfirmation(message, skip) {
+export function promptConfirmation(message, skip) {
   return new Promise((resolve, reject) => {
     if (skip) {
       return resolve();
@@ -25,7 +25,7 @@ export function getConfirmation(message, skip) {
   });
 }
 
-export function getProjectPath(rootPath) {
+export function promptProjectPath(rootPath) {
   return new Promise((resolve) => {
     const questions = [ {
       type: 'path',
@@ -46,11 +46,11 @@ export function getProjectPath(rootPath) {
   });
 }
 
-export function getPaths(rootPath, paths = []) {
-  return new Promise((resolve, reject) => {
+export function promptDependenciesPaths(rootPath) {
+  return new Promise((resolve) => {
     const questions = [ {
       type: 'path',
-      name: 'path',
+      name: 'paths',
       message: 'Enter a path containing local dependencies',
       directoryOnly: true,
       multi: true,
@@ -60,22 +60,41 @@ export function getPaths(rootPath, paths = []) {
         if (!exists(potentialPath)) return `The path ${potentialPath} does not exist`;
         else if (!isDirectory(potentialPath)) return `The path ${potentialPath} does not point to a directory`;
         return true;
+      },
+      validateMulti: (answers) => {
+        return answers.length > 0 ? true : 'You must select at least one path';
       }
     } ];
     inquirer.prompt(questions, (result) => {
-      const allPaths = [ ...paths, result.path ];
-      if (result.morePaths) {
-        getPaths(rootPath, allPaths).then(resolve, reject);
-      } else {
-        resolve(allPaths);
-      }
+      resolve(result.paths);
     });
   });
 }
 
-export function getWatches(projects) {
+export function promptDependencies(dependencies) {
   return new Promise((resolve) => {
-    const choices = projects.map((project) => `${project.name}@${project.version}`);
+    const choices = dependencies.map((project) => project.toString());
+    const questions = [ {
+      type: 'checkbox',
+      name: 'watches',
+      message: 'Please select the local dependencies you would like to install:',
+      default: choices,
+      choices
+    } ];
+
+    inquirer.prompt(questions, (result) => {
+      resolve(dependencies.filter((dependency) => {
+        return !! result.watches.find((name) => {
+          return dependency.toString() === name;
+        });
+      }));
+    });
+  });
+}
+
+export function promptWatches(projects) {
+  return new Promise((resolve) => {
+    const choices = projects.map((project) => project.toString());
     const questions = [ {
       type: 'checkbox',
       name: 'watches',

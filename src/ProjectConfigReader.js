@@ -9,7 +9,7 @@ export default class ProjectConfigReader {
     this.projectPath = projectPath;
   }
 
-  parse() {
+  read() {
     const configPath = path.join(this.projectPath, CONFIG);
     const configContent = fs.readFileSync(configPath, { encoding: 'utf-8' });
     const config = JSON.parse(configContent);

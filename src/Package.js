@@ -53,7 +53,7 @@ export default class Package extends PackageReference {
   }
 
   getDependencies(dev = false) {
-    return dev ? this.dependencies : [].concat(this.dependencies, this.devDependencies);
+    return dev ? [].concat(this.dependencies, this.devDependencies) : this.dependencies;
   }
 
   getPath() {

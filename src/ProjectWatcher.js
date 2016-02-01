@@ -1,33 +1,33 @@
 import chokidar from 'chokidar';
-import { copyPackage } from './helpers';
+import EventEmitter from 'events';
 
-export default class ProjectWatcher {
-  constructor(rootPath, dependenciesProjects) {
-    this.print = true;
-    this.rootPath = rootPath;
-    this.dependenciesProjects = dependenciesProjects;
+export default class ProjectWatcher extends EventEmitter {
+  constructor(projects) {
+    super();
+    this.projects = projects;
   }
 
   watch() {
     if (this.watcher) {
-      console.warn('Already watching');
       return this;
     }
-    if (this.print) console.log(`=> Watching dependencies for ${this.rootPath}`);
-    this.watcher = chokidar.watch(this.dependenciesProjects.map((depProject) => depProject.path));
-    this.watcher.on('change', (path) => this.copy(this.getProject(path)));
+    this.watcher = chokidar.watch(this.projects.map((depProject) => depProject.path));
+    this.watcher.on('change', (path) => this.emit('change', this.getProject(path)));
     return this;
   }
 
   getProject(path) {
-    return this.dependenciesProjects.find((project) => {
-      return path.startsWith(project.path);
-    });
-  }
-
-  copy(project) {
-    if (this.print) console.log(`   - Copying ${project.name}@${project.version}`);
-    copyPackage(project, this.rootPath);
+    return this.projects.reduce((bestMatch, project) => {
+      if (!path.startsWith(project.path)) {
+        return bestMatch;
+      }
+      // Handle cases where two module are in the same directory and have
+      // the same prefix.
+      if (!bestMatch || project.getPath().length > bestMatch.getPath().length) {
+        return project;
+      }
+      return bestMatch;
+    }, null);
   }
 
   unwatch() {

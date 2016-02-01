@@ -38,6 +38,7 @@ export default class ProjectInstaller {
       if (isDirectory(path.join(this.project.getPath(), NODE_MODULES, dependencyReference.getName()))) {
         return false;
       }
+      return true;
     });
   }
 

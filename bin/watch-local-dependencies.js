@@ -1,22 +1,30 @@
+#!/usr/bin/env node
+require('./transpile');
+
 const chalk = require('chalk');
-const constants = require('../lib/constants');
-const localDependencies = require('../lib');
-const ProjectConfigReader = localDependencies.ProjectConfigReader;
-const ProjectInstaller = localDependencies.ProjectInstaller;
-const ProjectWatcher = localDependencies.ProjectWatcher;
+const uiActions = require('../lib/ui/actions');
+const ProjectConfigReader = require('../lib/ProjectConfigReader').default;
+const ProjectWatcher = require('../lib/ProjectWatcher').default;
+const ProjectInstaller = require('../lib/ProjectInstaller').default;
 
-try {
-  const config = new ProjectConfigReader(process.cwd()).parse();
-  new ProjectInstaller(config.getProject(), config.getDependencies())
-    .installLocal()
-    .installRemote();
+const config = new ProjectConfigReader(process.cwd()).read();
 
-  new ProjectWatcher(config.getProject(), config.getDependencies())
-    .watch();
-} catch (err) {
-  console.log(chalk.red(`Could not parse the ${constants.CONFIG} file.`));
-  console.log(chalk.red(`Run 'npm run configure-local-dependencies' to generate a valid ${constants.CONFIG} file.`));
-  console.log();
-  console.log(chalk.red(err.stack));
-  return;
-}
+Promise.resolve()
+  .then(() => {
+    return uiActions.installLocal(config.getProject(), config.getDependencies());
+  })
+  .then(() => {
+    return uiActions.installNPM(config.getProject(), config.getDependencies());
+  })
+  .then(() => {
+    console.log('=> Watching ' + chalk.yellow(config.getProject()));
+    const watcher = new ProjectWatcher(config.getDependencies());
+    const installer = new ProjectInstaller(config.getProject(), config.getDependencies());
+
+    watcher.on('change', (dependency) => {
+      console.log('   Resinstalling ' + chalk.yellow(dependency));
+      installer.installProject(dependency);
+    });
+    watcher.watch();
+  })
+  .catch((error) => console.error(chalk.red(error.stack)));

@@ -12,30 +12,32 @@ However, `npm link` is extremely useful when working on multiple modules at the 
 
 ## Usage
 
-Install the `local-dependencies` module by running `npm install --save-dev local-dependencies`. Define a `.ldrc` file that specifies the path in which your local dependencies are saved. It has the following format:
+Install the `local-dependencies` module by running `npm install --save-dev local-dependencies`. The module defines a few commands that can be used while developing your project, they are:
+ 
+ - **configure-local-dependencies** : Launch the cli to generate a `.ldrc` file in your project. The `.ldrc` file stores information about all your local dependencies and whether they should be watched.
+ - **install-local-dependencies** : Install the local dependencies into your project. Your project's npm dependencies are also installed.
+ - **watch-local-dependencies** : Install the local dependencies and watch them for changes. When a change is detected in one of the dependency, it is reinstalled into your project.
+  
+> In order for `configure-local-dependencies` to work, the dependencies should be part of your project's `package.json`.
+ 
+Your project can use the commands defined by the `local-dependencies` module in its own `package.json` scripts to be easily used by other developers: 
  
  ```json
- {
-   "paths": [
-     "/var/apps/external/"
-   ]
- } 
- ```
- 
- > The specified paths are walked recursively to find npm modules.
- 
-Add the `watch-local-dependencies` script to your `package.json`:
-
-```json
 {
-  "watch-dependencies": "watch-local-dependencies"
+  "scripts": {
+    "configure-dependencies": "configure-local-dependencies",
+    "install-dependencies": "install-local-dependencies",
+    "watch-dependencies": "watch-local-dependencies"
+  }
 }
 ```
 
-Run `npm run watch-dependencies`. 
+Once your scripts are defined in your project, the developer should:
 
-> The `watch-local-dependencies` script will check that all the packages defined by your local projects are installed. It may take a bit of time to execute the first time if you are missing some external dependencies.
+1. Run `npm run configure-dependencies` to generate the `.ldrc` file.
+2. Run `npm run watch-dependencies` to reinstall local dependencies into the project.
 
+> The `watch-dependencies` script should be run from the project's root directory where the `.ldrc` is located.
 
 ## Development
 
