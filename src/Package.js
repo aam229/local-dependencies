@@ -29,12 +29,14 @@ export default class Package extends PackageReference {
       name,
       version,
       dependencies,
-      devDependencies
+      devDependencies,
+      scripts
     } = require(path.join(rootPath, PACKAGE_JSON));
 
     return {
       name,
       version,
+      scripts: scripts ? Object.keys(scripts) : [],
       path: rootPath,
       dependencies: Package.parseDependencies(dependencies),
       devDependencies: Package.parseDependencies(devDependencies)
@@ -45,15 +47,20 @@ export default class Package extends PackageReference {
     return new Package(Package.parse(rootPath));
   }
 
-  constructor({ ...packageReferenceConfig, path: packagePath, dependencies, devDependencies }) {
+  constructor({ ...packageReferenceConfig, path: packagePath, dependencies = [], devDependencies = [], scripts = [] }) {
     super(packageReferenceConfig);
     this.dependencies = dependencies;
     this.devDependencies = devDependencies;
     this.path = packagePath;
+    this.scripts = scripts;
   }
 
   getDependencies(dev = false) {
     return dev ? [].concat(this.dependencies, this.devDependencies) : this.dependencies;
+  }
+
+  getScripts() {
+    return this.scripts;
   }
 
   getPath() {

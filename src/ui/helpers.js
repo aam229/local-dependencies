@@ -1,5 +1,6 @@
 import inquirer from 'inquirer';
 import path from 'path';
+import chalk from 'chalk';
 
 import { PathPrompt } from 'inquirer-path';
 import Package from './../Package';
@@ -51,7 +52,7 @@ export function promptDependenciesPaths(rootPath) {
     const questions = [ {
       type: 'path',
       name: 'paths',
-      message: 'Enter a path containing local dependencies',
+      message: 'Enter a path to a directory',
       directoryOnly: true,
       multi: true,
       default: rootPath,
@@ -65,6 +66,7 @@ export function promptDependenciesPaths(rootPath) {
         return answers.length > 0 ? true : 'You must select at least one path';
       }
     } ];
+    console.log(`Enter paths to directories that contain local dependencies. Hit ${chalk.grey('ctrl+C')} once you are done.`);
     inquirer.prompt(questions, (result) => {
       resolve(result.paths);
     });

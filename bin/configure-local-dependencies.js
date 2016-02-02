@@ -18,12 +18,12 @@ uiActions.getProjectPath(rootPath)
   })
   .then((watches) => {
     config.setDependenciesWatches(watches);
+    return uiActions.writeConfig(config);
+  })
+  .then(() => {
     return uiActions.installLocal(config.getProject(), config.getDependencies());
   })
   .then(() => {
     return uiActions.installNPM(config.getProject(), config.getDependencies());
-  })
-  .then(() => {
-    return uiActions.writeConfig(config);
   })
   .catch((error) => console.error(chalk.red(error.stack)));

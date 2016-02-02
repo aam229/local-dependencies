@@ -3,7 +3,7 @@
   "description": "Install and watch local npm dependencies",
   "author": "Alexandre Massonneau <aam229@cornell.edu> (http://github.com/aam229)",
   "license": "MIT",
-  "version": "1.0.0-alpha5",
+  "version": "1.0.0-alpha6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aam229/local-dependencies.git"
@@ -27,6 +27,7 @@
     "watch-local-dependencies": "./bin/watch-local-dependencies.js"
   },
   "dependencies": {
+    "babel-runtime": "^6.3.19",
     "chalk": "^1.1.1",
     "chokidar": "^1.4.2",
     "fs-extra": "^0.26.4",

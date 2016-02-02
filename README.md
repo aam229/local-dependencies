@@ -19,6 +19,8 @@ Install the `local-dependencies` module by running `npm install --save-dev local
  - **watch-local-dependencies** : Install the local dependencies and watch them for changes. When a change is detected in one of the dependency, it is reinstalled into your project.
   
 > In order for `configure-local-dependencies` to work, the dependencies should be part of your project's `package.json`.
+
+> If your local dependency defines a `prepublish` script, its dependencies are installed and `npm run prepublish` is executed before copying the content into your root project. 
  
 Your project can use the commands defined by the `local-dependencies` module in its own `package.json` scripts to be easily used by other developers: 
  
