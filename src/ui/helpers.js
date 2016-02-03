@@ -106,7 +106,7 @@ export function promptWatches(projects) {
     } ];
 
     inquirer.prompt(questions, (result) => {
-      resolve(result.watches.map((name) => name.split('@').shift()));
+      resolve(result.watches.map((name) => name.substr(0, name.lastIndexOf('@'))));
     });
   });
 }
