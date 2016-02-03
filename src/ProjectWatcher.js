@@ -7,32 +7,29 @@ export default class ProjectWatcher extends EventEmitter {
     super();
     this.projects = projects;
     this.timeouts = new Map();
-    this.watches = new Map();
+    this.mutedProjects = new Map();
   }
 
   watch() {
     if (this.watcher) {
       return this;
     }
-    this.watcher = chokidar.watch([], {
+    this.watcher = chokidar.watch(this.projects.map((project) => project.getPath()), {
       ignored: new RegExp(`${NODE_MODULES}|${GIT}`)
     });
-    this.projects.forEach((project) => this.watchProject(project));
     this.watcher.on('ready', () => this.register());
     return this;
   }
 
-  watchProject(project) {
-    if (!project.getWatch() || this.watches.has(project)) {
+  unmuteProject(project) {
+    if (!project.getWatch() || !this.mutedProjects.get(project)) {
       return;
     }
-    this.watcher.add(project.getPath());
-    this.watches.set(project, true);
+    this.mutedProjects.set(project, false);
   }
 
-  unwatchProject(project) {
-    this.watcher.unwatch(project.getPath());
-    this.watches.delete(project);
+  muteProject(project) {
+    this.mutedProjects.set(project, true);
   }
 
   register() {
@@ -43,10 +40,7 @@ export default class ProjectWatcher extends EventEmitter {
   }
 
   throttleChange(project) {
-    // Dirty hack to get around that unwatching is not always immediate
-    // and can cause multiple events if the watched project is changed
-    // immediately after 'change' is triggered
-    if (!this.watches.has(project)) {
+    if (this.mutedProjects.get(project)) {
       return;
     }
     clearTimeout(this.timeouts.get(project));

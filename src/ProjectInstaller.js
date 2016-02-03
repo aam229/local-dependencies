@@ -13,7 +13,7 @@ export default class ProjectInstaller {
 
   installLocal() {
     // Copy all the local dependencies into the project
-    this.dependencies.forEach((dependencyProject) => this.installProject(dependencyProject));
+    this.dependencies.forEach((dependencyProject) => this.installProject(dependencyProject, true));
     return this;
   }
 
@@ -42,7 +42,7 @@ export default class ProjectInstaller {
     });
   }
 
-  installProject(dependencyProject) {
+  installProject(dependencyProject, cleanup = false) {
     const destPath = path.join(this.project.getPath(), NODE_MODULES, dependencyProject.getName());
     // Find any prepublish script
     if (dependencyProject.getScripts().find((script) => script === PREPUBLISH_SCRIPT)) {
@@ -55,7 +55,9 @@ export default class ProjectInstaller {
       // run the prepublish script
       childProcess.execSync(`npm run ${PREPUBLISH_SCRIPT}`, { cwd: dependencyProject.getPath() });
     }
-    fs.emptyDirSync(destPath);
+
+    if (cleanup) fs.emptyDirSync(destPath);
+
     fsForEachRecursive(
       dependencyProject.getPath(),
       (directoryName) => {
