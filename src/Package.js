@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 
 import PackageReference from './PackageReference';
 import { isFile } from './helpers';
@@ -25,18 +26,22 @@ export default class Package extends PackageReference {
     if (!Package.exists(rootPath)) {
       throw new Error(`There is no package in ${rootPath}`);
     }
+
+    const packageConfig = fs.readFileSync(path.join(rootPath, PACKAGE_JSON), 'utf8');
     const {
       name,
       version,
       dependencies,
       devDependencies,
-      scripts
-    } = require(path.join(rootPath, PACKAGE_JSON));
+      scripts,
+      bin
+    } = JSON.parse(packageConfig);
 
     return {
       name,
       version,
       scripts: scripts ? Object.keys(scripts) : [],
+      bin: bin ? bin : {},
       path: rootPath,
       dependencies: Package.parseDependencies(dependencies),
       devDependencies: Package.parseDependencies(devDependencies)
@@ -47,12 +52,13 @@ export default class Package extends PackageReference {
     return new Package(Package.parse(rootPath));
   }
 
-  constructor({ ...packageReferenceConfig, path: packagePath, dependencies = [], devDependencies = [], scripts = [] }) {
-    super(packageReferenceConfig);
-    this.dependencies = dependencies;
-    this.devDependencies = devDependencies;
-    this.path = packagePath;
-    this.scripts = scripts;
+  constructor(data) {
+    super({});
+    this.reset(data);
+  }
+
+  getBinaries() {
+    return this.bin;
   }
 
   getDependencies(dev = false) {
@@ -65,5 +71,18 @@ export default class Package extends PackageReference {
 
   getPath() {
     return this.path;
+  }
+
+  refresh() {
+    this.reset(Package.parse(this.getPath()));
+  }
+
+  reset({ ...packageReferenceData, path: packagePath, dependencies = [], devDependencies = [], scripts = [], bin = {} }) {
+    super.reset(packageReferenceData);
+    this.dependencies = dependencies;
+    this.devDependencies = devDependencies;
+    this.path = packagePath;
+    this.scripts = scripts;
+    this.bin = bin;
   }
 }

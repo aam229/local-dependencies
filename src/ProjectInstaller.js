@@ -2,7 +2,7 @@ import path from 'path';
 import childProcess from 'child_process';
 import fs from 'fs-extra';
 
-import { NODE_MODULES, GIT, PREPUBLISH_SCRIPT } from './constants';
+import { NODE_MODULES, GIT, PREPUBLISH_SCRIPT, NPM_BIN } from './constants';
 import { isDirectory, fsForEachRecursive } from './helpers';
 
 export default class ProjectInstaller {
@@ -67,5 +67,12 @@ export default class ProjectInstaller {
         fs.copySync(absolutePath, path.join(destPath, relativePath));
       }
     );
+
+    const commands = dependencyProject.getBinaries();
+    Object.keys(commands).forEach((command) => {
+      const linkPath = path.join(destPath, NODE_MODULES, NPM_BIN, command);
+      const commandPath = path.join(destPath, commands[command]);
+      fs.ensureSymlinkSync(commandPath, linkPath);
+    });
   }
 }

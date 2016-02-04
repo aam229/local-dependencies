@@ -1,6 +1,6 @@
 import chokidar from 'chokidar';
 import EventEmitter from 'events';
-import { THROTTLE_TIMEOUT, NODE_MODULES, GIT } from './constants';
+import { THROTTLE_TIMEOUT, NODE_MODULES } from './constants';
 
 export default class ProjectWatcher extends EventEmitter {
   constructor(projects) {
@@ -14,8 +14,11 @@ export default class ProjectWatcher extends EventEmitter {
     if (this.watcher) {
       return this;
     }
+    // Ignore node_modules and any hidden file
+    const ignoreRegex = new RegExp(`${NODE_MODULES}|[\\\/\\\\]\\\.`);
+
     this.watcher = chokidar.watch(this.projects.map((project) => project.getPath()), {
-      ignored: new RegExp(`${NODE_MODULES}|${GIT}`)
+      ignored: ignoreRegex
     });
     this.watcher.on('ready', () => this.register());
     return this;
@@ -33,19 +36,19 @@ export default class ProjectWatcher extends EventEmitter {
   }
 
   register() {
-    const handler = (path) => this.throttleChange(this.getProject(path));
+    const handler = (path) => this.throttleChange(this.getProject(path), path);
     this.watcher.on('change', handler);
     this.watcher.on('add', handler);
     this.watcher.on('unlink', handler);
   }
 
-  throttleChange(project) {
+  throttleChange(project, path) {
     if (this.mutedProjects.get(project)) {
       return;
     }
     clearTimeout(this.timeouts.get(project));
     this.timeouts.set(project, setTimeout(() => {
-      this.emit('change', project);
+      this.emit('change', project, path);
     }, THROTTLE_TIMEOUT));
   }
 

@@ -1,5 +1,9 @@
 export default class PackageReference {
-  constructor({ name, version }) {
+  constructor(data) {
+    this.reset(data);
+  }
+
+  reset({ name, version }) {
     this.name = name;
     this.version = version;
   }
