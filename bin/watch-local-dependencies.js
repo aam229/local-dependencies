@@ -13,10 +13,12 @@ Promise.resolve()
     console.log('=> Watching ' + chalk.yellow(config.getProject()));
     const installer = new ProjectInstaller(config.getProject(), config.getDependencies());
     const watcher = new ProjectWatcher(config.getDependencies());
+
     watcher.on('change', (dependency) => {
       watcher.muteProject(dependency);
       console.log('   Resinstalling ' + chalk.yellow(dependency));
-      installer.installProject(dependency);
+      installer.prepublishDependency(dependency, true);
+      installer.copyDependency(dependency, true);
       // Sometimes the installer will still be doing work.
       setTimeout(() => {
         console.log('   => ' + chalk.green('OK!'));

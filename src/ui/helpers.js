@@ -78,7 +78,7 @@ export function promptDependencies(dependencies) {
     const choices = dependencies.map((project) => project.toString());
     const questions = [ {
       type: 'checkbox',
-      name: 'watches',
+      name: 'dependencies',
       message: 'Please select the local dependencies you would like to install:',
       default: choices,
       choices
@@ -86,7 +86,7 @@ export function promptDependencies(dependencies) {
 
     inquirer.prompt(questions, (result) => {
       resolve(dependencies.filter((dependency) => {
-        return !! result.watches.find((name) => {
+        return !! result.dependencies.find((name) => {
           return dependency.toString() === name;
         });
       }));

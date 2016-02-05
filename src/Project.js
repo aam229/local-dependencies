@@ -18,4 +18,13 @@ export default class Project extends Package {
     this.watch = watch;
     return this;
   }
+
+  isPrepared() {
+    return this.prepared;
+  }
+
+  setPrepared() {
+    this.prepared = true;
+    return this;
+  }
 }

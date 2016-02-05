@@ -36,9 +36,10 @@ export function getProjectPath(cwd, yesToAll = true) {
 export function getDependencyProjects(cwd, project, yesToAll = true) {
   return promptDependenciesPaths(cwd)
     .then((dependencyPaths) => {
-      console.log('=> Searching for dependencies...');
-      const projects = new ProjectFinder(dependencyPaths).getProjects();
-      const dependencies = new ProjectDependenciesFinder(project, projects).getProjectDependencies();
+      console.log('=> Searching for projects...');
+      const projectsFinder = new ProjectFinder(dependencyPaths);
+      const dependenciesFinder = new ProjectDependenciesFinder(project, projectsFinder.getProjects());
+      const dependencies = dependenciesFinder.getProjectDependencies();
 
       return yesToAll ? dependencies : promptDependencies(dependencies);
     })

@@ -2,6 +2,7 @@ import path from 'path';
 import childProcess from 'child_process';
 import fs from 'fs-extra';
 
+import ProjectDependenciesFinder from './ProjectDependenciesFinder';
 import { NODE_MODULES, GIT, PREPUBLISH_SCRIPT, NPM_BIN } from './constants';
 import { isDirectory, fsForEachRecursive } from './helpers';
 
@@ -13,7 +14,10 @@ export default class ProjectInstaller {
 
   installLocal() {
     // Copy all the local dependencies into the project
-    this.dependencies.forEach((dependencyProject) => this.installProject(dependencyProject, true));
+    this.dependencies.forEach((dependencyProject) => {
+      this.prepublishDependency(dependencyProject);
+      this.copyDependency(dependencyProject);
+    });
     return this;
   }
 
@@ -42,21 +46,36 @@ export default class ProjectInstaller {
     });
   }
 
-  installProject(dependencyProject, cleanup = false) {
-    const destPath = path.join(this.project.getPath(), NODE_MODULES, dependencyProject.getName());
-    // Find any prepublish script
-    if (dependencyProject.getScripts().find((script) => script === PREPUBLISH_SCRIPT)) {
-      // Find missing dependencies that would be needed to run prepublish
-      const missingDependencies = this.getMissingProjectDependencies(dependencyProject, dependencyProject);
-      if (missingDependencies.length > 0) {
-        // Install missing dependencies if any
-        childProcess.execSync('npm install', { cwd: dependencyProject.getPath() });
-      }
-      // run the prepublish script
+  prepublishDependency(dependencyProject, update = false) {
+    const hasPrepublish = dependencyProject.getScripts().find((script) => script === PREPUBLISH_SCRIPT);
+    if (!hasPrepublish) {
+      return;
+    }
+    if (!update && !dependencyProject.isPrepared()) {
+      this.prepareDependency(dependencyProject);
+    }
+    if (update || !dependencyProject.isPrepared()) {
       childProcess.execSync(`npm run ${PREPUBLISH_SCRIPT}`, { cwd: dependencyProject.getPath() });
     }
+    dependencyProject.setPrepared(true);
+  }
 
-    if (cleanup) fs.emptyDirSync(destPath);
+  prepareDependency(dependencyProject) {
+    // Find the dependency's dependencies
+    const finder = new ProjectDependenciesFinder(dependencyProject, this.dependencies);
+    // Install the dependencies for the dependency project so that the prepublish script can run.
+    const installer = new ProjectInstaller(dependencyProject, finder.getProjectDependencies());
+    installer.installLocal();
+    installer.installRemote();
+  }
+
+  copyDependency(dependencyProject, update = false) {
+    const destPath = path.join(this.project.getPath(), NODE_MODULES, dependencyProject.getName());
+
+    if (!update) {
+      // Empty the destination directory.
+      fs.emptyDirSync(destPath);
+    }
 
     fsForEachRecursive(
       dependencyProject.getPath(),
