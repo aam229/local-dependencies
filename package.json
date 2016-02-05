@@ -3,7 +3,7 @@
   "description": "Install and watch local npm dependencies",
   "author": "Alexandre Massonneau <aam229@cornell.edu> (http://github.com/aam229)",
   "license": "MIT",
-  "version": "1.0.0-alpha10",
+  "version": "1.0.0-alpha11",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aam229/local-dependencies.git"
