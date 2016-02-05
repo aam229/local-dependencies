@@ -22,7 +22,7 @@ export default class ProjectDependenciesFinder {
 
   buildDependenciesListRecursively(project, projects) {
     // Find the project's dependencies that are available as projects
-    project.getDependencies().forEach((dependencyReference) => {
+    project.getDependencies(project === this.project).forEach((dependencyReference) => {
       const dependencyProject = this.projects.get(dependencyReference.getName());
       if (!dependencyProject) {
         return;
