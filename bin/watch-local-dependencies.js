@@ -27,6 +27,7 @@ Promise.resolve()
         }, 100);
       } catch (error){
         console.log('   => ' + chalk.red('Error'));
+        watcher.unmuteProject(dependency);
       }
 
     });
