@@ -1,11 +1,12 @@
 import chokidar from 'chokidar';
 import EventEmitter from 'events';
+
 import { THROTTLE_TIMEOUT, NODE_MODULES } from './constants';
 
 export default class ProjectWatcher extends EventEmitter {
   constructor(projects) {
     super();
-    this.projects = projects;
+    this.projects = projects.filter((project) => project.getWatch());
     this.timeouts = new Map();
     this.mutedProjects = new Map();
   }

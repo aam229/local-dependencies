@@ -1,6 +1,8 @@
 import path from 'path';
 import childProcess from 'child_process';
 import fs from 'fs-extra';
+import stream from 'stream';
+import chalk from 'chalk';
 
 import ProjectDependenciesFinder from './ProjectDependenciesFinder';
 import { NODE_MODULES, GIT, PREPUBLISH_SCRIPT, NPM_BIN } from './constants';
@@ -55,7 +57,7 @@ export default class ProjectInstaller {
       this.prepareDependency(dependencyProject);
     }
     if (update || !dependencyProject.isPrepared()) {
-      childProcess.execSync(`npm run ${PREPUBLISH_SCRIPT}`, { cwd: dependencyProject.getPath() });
+      childProcess.execSync(`npm run ${PREPUBLISH_SCRIPT}`, { cwd: dependencyProject.getPath(), stdio: ['ignore', 'ignore', process.stderr] });
     }
     dependencyProject.setPrepared(true);
   }

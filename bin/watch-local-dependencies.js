@@ -17,13 +17,18 @@ Promise.resolve()
     watcher.on('change', (dependency) => {
       watcher.muteProject(dependency);
       console.log('   Resinstalling ' + chalk.yellow(dependency));
-      installer.prepublishDependency(dependency, true);
-      installer.copyDependency(dependency, true);
-      // Sometimes the installer will still be doing work.
-      setTimeout(() => {
-        console.log('   => ' + chalk.green('OK!'));
-        watcher.unmuteProject(dependency);
-      }, 100);
+      try {
+        installer.prepublishDependency(dependency, true);
+        installer.copyDependency(dependency, true);
+        // Sometimes the installer will still be doing work.
+        setTimeout(() => {
+          console.log('   => ' + chalk.green('OK!'));
+          watcher.unmuteProject(dependency);
+        }, 100);
+      } catch (error){
+        console.log('   => ' + chalk.red('Error'));
+      }
+
     });
     watcher.watch();
   })
