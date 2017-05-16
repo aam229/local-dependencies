@@ -77,7 +77,7 @@ export default class Package extends PackageReference {
     this.reset(Package.parse(this.getPath()));
   }
 
-  reset({ ...packageReferenceData, path: packagePath, dependencies = [], devDependencies = [], scripts = [], bin = {} }) {
+  reset({ path: packagePath, dependencies = [], devDependencies = [], scripts = [], bin = {}, ...packageReferenceData }) {
     super.reset(packageReferenceData);
     this.dependencies = dependencies;
     this.devDependencies = devDependencies;

@@ -91,7 +91,7 @@ export default class ProjectInstaller {
 
     const commands = dependencyProject.getBinaries();
     Object.keys(commands).forEach((command) => {
-      const linkPath = path.join(destPath, NODE_MODULES, NPM_BIN, command);
+      const linkPath = path.join(this.project.getPath(), NODE_MODULES, NPM_BIN, command);
       const commandPath = path.join(destPath, commands[command]);
       fs.ensureSymlinkSync(commandPath, linkPath);
     });

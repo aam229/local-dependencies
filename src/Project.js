@@ -5,7 +5,7 @@ export default class Project extends Package {
     return new Project(Package.parse(rootPath));
   }
 
-  constructor({ ...packageConfig, watch }) {
+  constructor({ watch, ...packageConfig }) {
     super(packageConfig);
     this.watch = watch;
   }
