@@ -21,7 +21,7 @@ export default class ProjectFinder {
 
   buildProjectsList() {
     const projects = [];
-    this.rootPaths.forEach((rootPath) => this.buildProjectsListRecursively(rootPath, projects));
+    this.rootPaths.forEach(rootPath => this.buildProjectsListRecursively(rootPath, projects));
     return projects;
   }
 
@@ -32,12 +32,12 @@ export default class ProjectFinder {
 
     fs.readdirSync(currentPath)
       // Do not dig into node_modules folders
-      .filter((childName) => childName !== NODE_MODULES)
+      .filter(childName => childName !== NODE_MODULES)
       // Turn folder/file names into full paths
-      .map((childName) => path.join(currentPath, childName))
+      .map(childName => path.join(currentPath, childName))
       // Only keep directories
-      .filter((childPath) => isDirectory(childPath))
+      .filter(childPath => isDirectory(childPath))
       // Go dig into the directory
-      .forEach((childPath) => this.buildProjectsListRecursively(childPath, projects));
+      .forEach(childPath => this.buildProjectsListRecursively(childPath, projects));
   }
 }

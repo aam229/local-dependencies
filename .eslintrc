@@ -17,29 +17,20 @@
     "indent": [2, 2, {"SwitchCase": 1}],
     "no-console": 0,
     "no-alert": 0,
+    "no-confusing-arrow": 0,
     "no-nested-ternary": 0,
     "max-len": 0,
     "object-curly-spacing": [2, "always"],
     "array-bracket-spacing": [2, "always"]
   },
   "plugins": [
-    "react",
     "import"
   ],
   "settings": {
     "import/parser": "babel-eslint",
     "import/resolve": {
-      moduleDirectory: ["node_modules", "src"]
+      "moduleDirectory": ["node_modules", "src"]
     }
   },
-  "globals": {
-    "__DEVELOPMENT__": true,
-    "__CLIENT__": true,
-    "__SERVER__": true,
-    "__LOGGER__": false,
-    "__DISABLE_SSR__": true,
-    "__DEVTOOLS__": true,
-    "__DEVTOOLS_IS_VISIBLE__": true,
-    "webpackIsomorphicTools": true
-  }
+  "globals": {}
 }

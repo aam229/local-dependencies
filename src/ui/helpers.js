@@ -11,12 +11,13 @@ inquirer.prompt.registerPrompt('path', PathPrompt);
 export function promptConfirmation(message, skip) {
   return new Promise((resolve, reject) => {
     if (skip) {
-      return resolve();
+      resolve();
+      return;
     }
     const questions = [ {
       type: 'confirm',
       name: 'continue',
-      message: message,
+      message,
       default: true
     } ];
     inquirer.prompt(questions, (result) => {
@@ -43,7 +44,7 @@ export function promptProjectPath(rootPath) {
       }
     } ];
 
-    inquirer.prompt(questions, (result) => resolve(result.path));
+    inquirer.prompt(questions, result => resolve(result.path));
   });
 }
 
@@ -62,9 +63,7 @@ export function promptDependenciesPaths(rootPath) {
         else if (!isDirectory(potentialPath)) return `The path ${potentialPath} does not point to a directory`;
         return true;
       },
-      validateMulti: (answers) => {
-        return answers.length > 0 ? true : 'You must select at least one path';
-      }
+      validateMulti: answers => answers.length > 0 ? true : 'You must select at least one path'
     } ];
     console.log(`Enter paths to directories that contain local dependencies. Hit ${chalk.grey('ctrl+C')} once you are done.`);
     inquirer.prompt(questions, (result) => {
@@ -75,7 +74,7 @@ export function promptDependenciesPaths(rootPath) {
 
 export function promptDependencies(dependencies) {
   return new Promise((resolve) => {
-    const choices = dependencies.map((project) => project.toString());
+    const choices = dependencies.map(project => project.toString());
     const questions = [ {
       type: 'checkbox',
       name: 'dependencies',
@@ -85,18 +84,14 @@ export function promptDependencies(dependencies) {
     } ];
 
     inquirer.prompt(questions, (result) => {
-      resolve(dependencies.filter((dependency) => {
-        return !! result.dependencies.find((name) => {
-          return dependency.toString() === name;
-        });
-      }));
+      resolve(dependencies.filter(dependency => !!result.dependencies.find(name => dependency.toString() === name)));
     });
   });
 }
 
 export function promptWatches(projects) {
   return new Promise((resolve) => {
-    const choices = projects.map((project) => project.toString());
+    const choices = projects.map(project => project.toString());
     const questions = [ {
       type: 'checkbox',
       name: 'watches',
@@ -106,7 +101,7 @@ export function promptWatches(projects) {
     } ];
 
     inquirer.prompt(questions, (result) => {
-      resolve(result.watches.map((name) => name.substr(0, name.lastIndexOf('@'))));
+      resolve(result.watches.map(name => name.substr(0, name.lastIndexOf('@'))));
     });
   });
 }

@@ -1,8 +1,6 @@
 import path from 'path';
 import childProcess from 'child_process';
 import fs from 'fs-extra';
-import stream from 'stream';
-import chalk from 'chalk';
 
 import ProjectDependenciesFinder from './ProjectDependenciesFinder';
 import { NODE_MODULES, GIT, PREPUBLISH_SCRIPT, NPM_BIN } from './constants';
@@ -16,6 +14,7 @@ export default class ProjectInstaller {
 
   installLocal() {
     // Copy all the local dependencies into the project
+    this.dependencies.map(d => console.log(d.getName()));
     this.dependencies.forEach((dependencyProject) => {
       this.prepublishDependency(dependencyProject);
       this.copyDependency(dependencyProject);
@@ -34,22 +33,11 @@ export default class ProjectInstaller {
   getMissingDependencies() {
     // Find any missing dependencies
     const allProjects = [ this.project, ...this.dependencies ];
-    return [].concat(...allProjects.map((project) => {
-      return this.getMissingProjectDependencies(project, this.project);
-    }));
-  }
-
-  getMissingProjectDependencies(srcProject, dstProject) {
-    return srcProject.getDependencies(srcProject === dstProject).filter((dependencyReference) => {
-      if (isDirectory(path.join(dstProject.getPath(), NODE_MODULES, dependencyReference.getName()))) {
-        return false;
-      }
-      return true;
-    });
+    return [].concat(...allProjects.map(project => ProjectInstaller.getMissingProjectDependencies(project, this.project)));
   }
 
   prepublishDependency(dependencyProject, update = false) {
-    const hasPrepublish = dependencyProject.getScripts().find((script) => script === PREPUBLISH_SCRIPT);
+    const hasPrepublish = dependencyProject.getScripts().find(script => script === PREPUBLISH_SCRIPT);
     if (!hasPrepublish) {
       return;
     }
@@ -57,7 +45,7 @@ export default class ProjectInstaller {
       this.prepareDependency(dependencyProject);
     }
     if (update || !dependencyProject.isPrepared()) {
-      childProcess.execSync(`npm run ${PREPUBLISH_SCRIPT}`, { cwd: dependencyProject.getPath(), stdio: ['ignore', 'ignore', process.stderr] });
+      childProcess.execSync(`npm run ${PREPUBLISH_SCRIPT}`, { cwd: dependencyProject.getPath(), stdio: [ 'ignore', 'ignore', process.stderr ] });
     }
     dependencyProject.setPrepared(true);
   }
@@ -81,9 +69,7 @@ export default class ProjectInstaller {
 
     fsForEachRecursive(
       dependencyProject.getPath(),
-      (directoryName) => {
-        return directoryName !== NODE_MODULES && directoryName !== GIT;
-      },
+      directoryName => directoryName !== NODE_MODULES && directoryName !== GIT,
       (childName, relativePath, absolutePath) => {
         fs.copySync(absolutePath, path.join(destPath, relativePath));
       }
@@ -94,6 +80,15 @@ export default class ProjectInstaller {
       const linkPath = path.join(this.project.getPath(), NODE_MODULES, NPM_BIN, command);
       const commandPath = path.join(destPath, commands[command]);
       fs.ensureSymlinkSync(commandPath, linkPath);
+    });
+  }
+
+  static getMissingProjectDependencies(srcProject, dstProject) {
+    return srcProject.getDependencies(srcProject === dstProject).filter((dependencyReference) => {
+      if (isDirectory(path.join(dstProject.getPath(), NODE_MODULES, dependencyReference.getName()))) {
+        return false;
+      }
+      return true;
     });
   }
 }

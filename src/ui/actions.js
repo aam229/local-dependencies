@@ -26,10 +26,10 @@ export function getProjectPath(cwd, yesToAll = true) {
       if (yesToAll) {
         return project;
       }
-      return promptConfirmation('The config will be built for ' + chalk.yellow(project))
+      return promptConfirmation(`The config will be built for ${chalk.yellow(project)}`)
         .then(() => project);
     })
-    .then((project) => project)
+    .then(project => project)
     .catch(wrapStepForErrors(() => getProjectPath()));
 }
 
@@ -66,7 +66,7 @@ export function installLocal(project, dependencies, yesToAll = true) {
   }
   return promise.then(
       () => {
-        console.log(`=> Installing local dependencies`);
+        console.log('=> Installing local dependencies');
         installer.installLocal();
         console.log(`   ${chalk.green('OK!')}`);
         return true;
@@ -83,7 +83,7 @@ export function installNPM(project, dependencies, yesToAll = true) {
   }
   return promise.then(
       () => {
-        console.log(`=> Checking remote dependencies`);
+        console.log('=> Checking remote dependencies');
         const missingDependencies = installer.getMissingDependencies();
         if (missingDependencies.length > 0) {
           const sample = missingDependencies.splice(0, 5);
@@ -94,7 +94,7 @@ export function installNPM(project, dependencies, yesToAll = true) {
           if (sample.length < missingDependencies.length) {
             console.log(`    - ... ${missingDependencies.length - sample.length} more`);
           }
-          console.log(`=> Installing remote dependencies`);
+          console.log('=> Installing remote dependencies');
           installer.installRemote(missingDependencies);
         }
         console.log(`   ${chalk.green('OK!')}`);

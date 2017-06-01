@@ -26,7 +26,7 @@ export function fsForEachRecursive(fullPath, directoryCallback, fileCallback, re
       if (isFile(childAbsolutePath)) {
         fileCallback(childName, childRelativePath, childAbsolutePath);
       } else if (directoryCallback(childName, childRelativePath, childAbsolutePath)) {
-        fsForEachRecursive(fullPath, directoryCallback, fileCallback, childRelativePath );
+        fsForEachRecursive(fullPath, directoryCallback, fileCallback, childRelativePath);
       }
     });
 }

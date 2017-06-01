@@ -1,6 +1,6 @@
-import { CONFIG } from './constants';
 import fs from 'fs-extra';
 import path from 'path';
+import { CONFIG } from './constants';
 
 export default class ProjectConfigWriter {
   setProject(project) {
@@ -23,7 +23,7 @@ export default class ProjectConfigWriter {
 
   setDependenciesWatches(dependencyNames) {
     this.dependencies.forEach((dependencyProject) => {
-      if (dependencyNames.find((dependencyName) => dependencyName === dependencyProject.getName())) {
+      if (dependencyNames.find(dependencyName => dependencyName === dependencyProject.getName())) {
         dependencyProject.setWatch(true);
       }
     });
@@ -31,13 +31,12 @@ export default class ProjectConfigWriter {
   }
 
   write() {
-    const config = this.dependencies.reduce((conf, dependencyProject) => {
-      conf[dependencyProject.getName()] = {
+    const config = Object.assign(...this.dependencies.map(dependencyProject => ({
+      [dependencyProject.getName()]: {
         path: dependencyProject.getPath(),
         watch: dependencyProject.getWatch()
-      };
-      return conf;
-    }, {});
+      }
+    })));
     const configPath = path.join(this.project.path, CONFIG);
     const configTxt = JSON.stringify(config, null, 2);
     fs.writeFileSync(configPath, configTxt, 'utf8');

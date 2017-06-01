@@ -20,10 +20,6 @@ uiActions.getProjectPath(rootPath)
     config.setDependenciesWatches(watches);
     return uiActions.writeConfig(config);
   })
-  .then(() => {
-    return uiActions.installLocal(config.getProject(), config.getDependencies());
-  })
-  .then(() => {
-    return uiActions.installNPM(config.getProject(), config.getDependencies());
-  })
-  .catch((error) => console.error(chalk.red(error.stack)));
+  .then(() => uiActions.installLocal(config.getProject(), config.getDependencies()))
+  .then(() => uiActions.installNPM(config.getProject(), config.getDependencies()))
+  .catch(error => console.error(chalk.red(error.stack)));

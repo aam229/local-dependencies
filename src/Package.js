@@ -14,12 +14,10 @@ export default class Package extends PackageReference {
     if (!dependencies) {
       return [];
     }
-    return Object.keys(dependencies).map((dependencyName) => {
-      return new PackageReference({
-        name: dependencyName,
-        version: dependencies[dependencyName]
-      });
-    });
+    return Object.keys(dependencies).map(dependencyName => new PackageReference({
+      name: dependencyName,
+      version: dependencies[dependencyName]
+    }));
   }
 
   static parse(rootPath) {
@@ -41,7 +39,7 @@ export default class Package extends PackageReference {
       name,
       version,
       scripts: scripts ? Object.keys(scripts) : [],
-      bin: bin ? bin : {},
+      bin: bin || {},
       path: rootPath,
       dependencies: Package.parseDependencies(dependencies),
       devDependencies: Package.parseDependencies(devDependencies)
