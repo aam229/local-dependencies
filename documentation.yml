@@ -1,0 +1,21 @@
+toc:
+  - PackageInstaller
+  - PackageWatcher
+  - name: Model
+    description: Models used throughout the project
+  - LocalPackage
+  - LocalPackageConfig
+  - LocalPackageDependencyTree
+  - LocalPackageDependencyTreeNode
+  - LocalPackageState
+  - PackageReference
+  - name: IO
+    description: Classes to read/write files
+  - FSUtil
+  - PackageConfigReader
+  - PackageConfigWriter
+  - PackageFinder
+  - PackageReader
+  - name: UI
+    description: Classes to interact with the user
+  - PromptUtil

@@ -12,17 +12,17 @@ However, `npm link` is extremely useful when working on multiple modules at the 
 
 ## Usage
 
-Install the `local-dependencies` module by running `npm install --save-dev local-dependencies`. The module defines a few commands that can be used while developing your project, they are:
+Install the `local-children` module by running `npm install --save-dev local-children`. The module defines a few commands that can be used while developing your project, they are:
  
  - **configure-local-dependencies** : Launch the cli to generate a `.ldrc` file in your project. The `.ldrc` file stores information about all your local dependencies and whether they should be watched.
  - **install-local-dependencies** : Install the local dependencies into your project. Your project's npm dependencies are also installed.
  - **watch-local-dependencies** : Install the local dependencies and watch them for changes. When a change is detected in one of the dependency, it is reinstalled into your project.
   
-> In order for `configure-local-dependencies` to work, the dependencies should be part of your project's `package.json`.
+> In order for `configure-local-children` to work, the dependencies should be part of your project's `package.json`.
 
 > If your local dependency defines a `prepublish` script, its dependencies are installed and `npm run prepublish` is executed before copying the content into your root project. 
  
-Your project can use the commands defined by the `local-dependencies` module in its own `package.json` scripts to be easily used by other developers: 
+Your project can use the commands defined by the `local-children` module in its own `package.json` scripts to be easily used by other developers: 
  
  ```json
 {
@@ -36,10 +36,10 @@ Your project can use the commands defined by the `local-dependencies` module in 
 
 Once your scripts are defined in your project, the developer should:
 
-1. Run `npm run configure-dependencies` to generate the `.ldrc` file.
-2. Run `npm run watch-dependencies` to reinstall local dependencies into the project.
+1. Run `npm run configure-children` to generate the `.ldrc` file.
+2. Run `npm run watch-children` to reinstall local dependencies into the project.
 
-> The `watch-dependencies` script should be run from the project's root directory where the `.ldrc` is located.
+> The `watch-children` script should be run from the project's root directory where the `.ldrc` is located.
 
 ## Development
 
