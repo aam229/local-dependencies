@@ -129,4 +129,5 @@ getRootPackage(rootPath)
     console.log('=> Writing config to .ldrc');
     PackageConfigWriter.write(config.root.getPath(), packageConfigs);
     console.log(`   ${chalk.green('OK!')}`);
-  });
+  })
+  .catch(err => console.error(err.stack));

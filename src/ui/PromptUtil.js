@@ -27,22 +27,21 @@ export default class PromptUtil {
    * @returns {Promise}
    */
   static confirm(message: string, skip: boolean): Promise<> {
-    return new Promise((resolve, reject) => {
-      if (skip) {
-        resolve();
-        return;
-      }
-      const questions = [{
-        type: 'confirm',
-        name: 'continue',
-        message,
-        default: true,
-      }];
-      inquirer.prompt(questions, (result) => {
-        if (result.continue) resolve(result.path);
-        else reject();
+    if (skip) {
+      return Promise.resolve();
+    }
+    const questions = [{
+      type: 'confirm',
+      name: 'continue',
+      message,
+      default: true,
+    }];
+    return inquirer.prompt(questions)
+      .then((result) => {
+        if (!result.continue) {
+          throw new Error('User rejected confirmation');
+        }
       });
-    });
   }
 
   /**
@@ -52,23 +51,21 @@ export default class PromptUtil {
    * @returns {Promise<string>} A promise that resolves to a valid npm package path
    */
   static getPackagePath(defaultPath: string): Promise<string> {
-    return new Promise((resolve) => {
-      const questions = [{
-        type: 'path',
-        name: 'path',
-        message: 'Enter the path to your project',
-        directoryOnly: true,
-        default: defaultPath,
-        validate: (answer) => {
-          const potentialPath = path.isAbsolute(answer) ? answer : path.join(defaultPath, answer);
-          if (!FSUtil.exists(potentialPath)) return `The path ${potentialPath} does not exist`;
-          else if (!FSUtil.isDirectory(potentialPath)) return `The path ${potentialPath} does not point to a directory`;
-          else if (!PackageReader.exists(potentialPath)) return `The path ${potentialPath} does not seem to be an npm package`;
-          return true;
-        },
-      }];
-      inquirer.prompt(questions, result => resolve(result.path));
-    });
+    const questions = [{
+      type: 'path',
+      name: 'path',
+      message: 'Enter the path to your project',
+      directoryOnly: true,
+      default: defaultPath,
+      validate: (answer) => {
+        const potentialPath = path.isAbsolute(answer) ? answer : path.join(defaultPath, answer);
+        if (!FSUtil.exists(potentialPath)) return `The path ${potentialPath} does not exist`;
+        else if (!FSUtil.isDirectory(potentialPath)) return `The path ${potentialPath} does not point to a directory`;
+        else if (!PackageReader.exists(potentialPath)) return `The path ${potentialPath} does not seem to be an npm package`;
+        return true;
+      },
+    }];
+    return inquirer.prompt(questions).then(result => result.path);
   }
 
   /**
@@ -77,27 +74,26 @@ export default class PromptUtil {
    * @returns {Promise<Array<string>>} A promise that resolves to 1 or more existing directories
    */
   static getPackageSearchPath(defaultPath: string): Promise<> {
-    return new Promise((resolve) => {
-      const questions = [{
-        type: 'path',
-        name: 'paths',
-        message: 'Enter a path to a directory',
-        directoryOnly: true,
-        multi: true,
-        default: defaultPath,
-        validate: (answer) => {
-          const potentialPath = path.isAbsolute(answer) ? answer : path.join(defaultPath, answer);
-          if (!FSUtil.exists(potentialPath)) return `The path ${potentialPath} does not exist`;
-          else if (!FSUtil.isDirectory(potentialPath)) return `The path ${potentialPath} does not point to a directory`;
+    const questions = [{
+      type: 'path',
+      name: 'paths',
+      message: 'Enter a path to a directory',
+      directoryOnly: true,
+      multi: true,
+      default: defaultPath,
+      validate: (answer) => {
+        if (typeof answer !== 'string') {
           return true;
-        },
-        validateMulti: answers => answers.length > 0 ? true : 'You must select at least one path',
-      }];
-      console.log(`Enter paths to directories that contain local dependencies. Hit ${chalk.grey('ctrl+C')} once you are done.`);
-      inquirer.prompt(questions, (result) => {
-        resolve(result.paths);
-      });
-    });
+        }
+        const potentialPath = path.isAbsolute(answer) ? answer : path.join(defaultPath, answer);
+        if (!FSUtil.exists(potentialPath)) return `The path ${potentialPath} does not exist`;
+        else if (!FSUtil.isDirectory(potentialPath)) return `The path ${potentialPath} does not point to a directory`;
+        return true;
+      },
+      validateMulti: answers => answers.length > 0 ? true : 'You must select at least one path',
+    }];
+    console.log(`Enter paths to directories that contain local dependencies. Hit ${chalk.grey('ctrl+C')} or ${chalk.grey('ESC')} once you are done.`);
+    return inquirer.prompt(questions).then(results => results.paths);
   }
 
   /**
@@ -109,21 +105,20 @@ export default class PromptUtil {
   static confirmDependencyPackages(
     dependencies: Array<LocalPackage>,
   ): Promise<Array<LocalPackage>> {
-    const dependenciesByName = dependencies.reduce((m, d) => m.set(d.toString(), d), new Map());
-    return new Promise((resolve) => {
-      const choices = dependencies.map(d => d.toString());
-      const questions = [{
-        type: 'checkbox',
-        name: 'dependencies',
-        message: 'Please select the local dependencies you would like to install:',
-        default: choices,
-        choices,
-      }];
+    const uniqueDependencies = Array.from(new Set(dependencies));
+    const dependenciesByName = uniqueDependencies
+      .reduce((m, d) => m.set(d.toString(), d), new Map());
+    const choices = uniqueDependencies.map(d => d.toString());
+    const questions = [{
+      type: 'checkbox',
+      name: 'dependencies',
+      message: 'Please select the local dependencies you would like to install:',
+      default: choices,
+      choices,
+    }];
 
-      inquirer.prompt(questions, (result) => {
-        resolve(result.dependencies.map(name => dependenciesByName.get(name)));
-      });
-    });
+    return inquirer.prompt(questions)
+      .then(result => result.dependencies.map(name => dependenciesByName.get(name)));
   }
 
   /**
@@ -135,19 +130,16 @@ export default class PromptUtil {
    */
   static selectWatchedPackages(dependencies: Array<LocalPackage>): Promise<Array<LocalPackage>> {
     const dependenciesByName = dependencies.reduce((m, d) => m.set(d.toString(), d), new Map());
-    return new Promise((resolve) => {
-      const choices = dependencies.map(d => d.toString());
-      const questions = [{
-        type: 'checkbox',
-        name: 'watches',
-        message: 'Please select the dependencies you would like to watch:',
-        default: choices,
-        choices,
-      }];
+    const choices = dependencies.map(d => d.toString());
+    const questions = [{
+      type: 'checkbox',
+      name: 'watches',
+      message: 'Please select the dependencies you would like to watch:',
+      default: choices,
+      choices,
+    }];
 
-      inquirer.prompt(questions, (result) => {
-        resolve(result.watches.map(name => dependenciesByName.get(name)));
-      });
-    });
+    return inquirer.prompt(questions)
+      .then(result => result.watches.map(name => dependenciesByName.get(name)));
   }
 }
