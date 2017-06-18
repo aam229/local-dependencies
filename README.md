@@ -40,9 +40,11 @@ Once your scripts are defined in your project, the developer should:
 2. Run `npm run install-dependencies` to install local dependencies into the project.
 3. *Optional* Run `npm run watch-dependencies` during development so that updated local dependencies are quickly reinstall. 
 
-> The `watch-children` script should be run from the project's root directory where the `.ldrc` is located.
+> The scripts should be run from the project's root directory where the `.ldrc` is located.
 
 ## Development
+
+The API documentation can be found [here](./DOCUMENTATION.md)
 
 This project defines a few npm scripts that you can use to help you develop on this project:
 
@@ -50,9 +52,9 @@ This project defines a few npm scripts that you can use to help you develop on t
  - Use `npm run compile-watch` to watch the `src` for changes and recompile the files.
  - Use `npm run docs` to generate the project's documentation
  - Use `npm run docs-watch` to create a documentation server which gets updated continuously
+ - Use `npm run docs-md` to generate the DOCUMENTATION.md file
  - Use `npm run lint` to make sure your code conforms to this project's standards
  - Use `npm run fix-lint` to make sure your code conforms to this project's standards and fix simple issues (spacing etc...)
-
 > Make sure you install the dev dependencies in order to use the commands above.
 
 
