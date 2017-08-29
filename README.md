@@ -14,7 +14,13 @@ However, `npm link` is extremely useful when working on multiple modules at the 
 
 Install the `local-dependencies` module by running `npm install --save-dev local-dependencies`. The module defines a few commands that can be used while developing your project, they are:
  
- - **configure-local-dependencies** : Launch the cli to generate a `.ldrc` file in your project. The `.ldrc` file stores information about all your local dependencies and whether they should be watched.
+ - **configure-local-dependencies** : Launch the cli to generate a `.ldrc` file in your project. The `.ldrc` file stores information about all your local dependencies and whether they should be watched. It is formatted as follow:
+   ```
+   { 
+    "package-name": { "path": "/path/to/local/package", "watch": true },
+    "package-name2": { "path": "/path/to/local/package2", "watch": false },
+   }
+   ```
  - **install-local-dependencies** : Install the local dependencies into your project. Your project's npm dependencies are also installed.
  - **watch-local-dependencies** : Install the local dependencies and watch them for changes. When a change is detected in one of the dependency, it is reinstalled into your project.
   
